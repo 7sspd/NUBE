@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NUBE Offline - Almacenamiento local sin pérdida</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E☁%EF%B8%8F%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="logo">☁️ NUBE Offline</h1>
+            <p class="tagline">Tus archivos guardados en tu navegador, sin servidores, sin pérdida.</p>
+        </div>
+        <div class="storage-info">
+            <div class="storage-bar">
+                <div id="storageFill" class="storage-fill"></div>
+            </div>
+            <span id="storageText" class="storage-text">Calculando espacio…</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Zona de subida -->
+        <section id="dropZone" class="drop-zone" aria-label="Zona para soltar archivos">
+            <div class="drop-zone-content">
+                <div class="drop-icon">📤</div>
+                <h2>Arrastra archivos aquí</h2>
+                <p>o</p>
+                <label for="fileInput" class="btn btn-primary">
+                    Seleccionar archivos
+                </label>
+                <input id="fileInput" type="file" multiple hidden>
+                <p class="hint">Cualquier tipo: imágenes, videos, PDF, ZIP, código, etc.</p>
+            </div>
+            <div id="uploadProgress" class="upload-progress hidden">
+                <div class="progress-track">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <span id="progressText">0%</span>
+            </div>
+        </section>
+
+        <!-- Toolbar -->
+        <section class="toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input id="searchInput" type="search" placeholder="Buscar archivo por nombre…">
+            </div>
+            <div class="toolbar-actions">
+                <select id="sortSelect" class="select">
+                    <option value="date-desc">Más recientes</option>
+                    <option value="date-asc">Más antiguos</option>
+                    <option value="name-asc">Nombre A-Z</option>
+                    <option value="name-desc">Nombre Z-A</option>
+                    <option value="size-desc">Tamaño (mayor)</option>
+                    <option value="size-asc">Tamaño (menor)</option>
+                </select>
+                <div class="view-toggle">
+                    <button id="gridViewBtn" class="view-btn active" title="Vista cuadrícula">▦</button>
+                    <button id="listViewBtn" class="view-btn" title="Vista lista">☰</button>
+                </div>
+                <button id="exportAllBtn" class="btn btn-secondary" title="Descargar todos los archivos">⬇ Exportar todo</button>
+                <button id="clearAllBtn" class="btn btn-danger" title="Borrar todos los archivos">🗑 Borrar todo</button>
+            </div>
+        </section>
+
+        <!-- Lista de archivos -->
+        <section id="filesContainer" class="files-container grid-view">
+            <div id="emptyState" class="empty-state">
+                <div class="empty-icon">📂</div>
+                <h3>Tu nube está vacía</h3>
+                <p>Sube archivos para comenzar. Se guardarán en tu navegador y estarán disponibles incluso sin internet.</p>
+            </div>
+            <div id="filesList" class="files-list"></div>
+        </section>
+    </main>
+
+    <!-- Modal de previsualización -->
+    <div id="previewModal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal-overlay" data-close-modal></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 id="previewTitle">Previsualización</h3>
+                <div class="modal-actions">
+                    <button id="previewDownloadBtn" class="btn btn-primary btn-sm">⬇ Descargar</button>
+                    <button class="btn-icon" data-close-modal title="Cerrar">✕</button>
+                </div>
+            </header>
+            <div id="previewBody" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <footer class="app-footer">
+        <p>
+            100% offline · Tus archivos nunca salen de este dispositivo · Almacenado con IndexedDB
+        </p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
