@@ -2,104 +2,182 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NUBE Offline - Almacenamiento local sin pérdida</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>NUBE Offline</title>
+    <meta name="description" content="Tu nube personal 100% offline. Cifrada con tu contraseña.">
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+
+    <!-- iOS / Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NUBE">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <!-- Iconos -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E☁%EF%B8%8F%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-    <header class="app-header">
-        <div class="header-content">
-            <h1 class="logo">☁️ NUBE Offline</h1>
-            <p class="tagline">Tus archivos guardados en tu navegador, sin servidores, sin pérdida.</p>
-        </div>
-        <div class="storage-info">
-            <div class="storage-bar">
-                <div id="storageFill" class="storage-fill"></div>
-            </div>
-            <span id="storageText" class="storage-text">Calculando espacio…</span>
-        </div>
-    </header>
+    <!-- ============ PANTALLA DE BIENVENIDA / SETUP ============ -->
+    <section id="setupScreen" class="auth-screen hidden" role="dialog" aria-labelledby="setupTitle">
+        <div class="auth-card">
+            <div class="auth-logo">☁️</div>
+            <h1 id="setupTitle">Bienvenido a NUBE</h1>
+            <p class="auth-subtitle">Tu nube personal, 100% en tu dispositivo. Configura cómo quieres proteger tus archivos.</p>
 
-    <main class="container">
-        <!-- Zona de subida -->
-        <section id="dropZone" class="drop-zone" aria-label="Zona para soltar archivos">
-            <div class="drop-zone-content">
-                <div class="drop-icon">📤</div>
-                <h2>Arrastra archivos aquí</h2>
-                <p>o</p>
-                <label for="fileInput" class="btn btn-primary">
-                    Seleccionar archivos
-                </label>
-                <input id="fileInput" type="file" multiple hidden>
-                <p class="hint">Cualquier tipo: imágenes, videos, PDF, ZIP, código, etc.</p>
+            <div class="auth-options">
+                <button class="auth-option" data-mode="password">
+                    <div class="auth-option-icon">🔒</div>
+                    <div class="auth-option-text">
+                        <strong>Con contraseña (recomendado)</strong>
+                        <span>Tus archivos se cifran con AES-256. Sin la contraseña nadie puede abrirlos.</span>
+                    </div>
+                </button>
+                <button class="auth-option" data-mode="open">
+                    <div class="auth-option-icon">🔓</div>
+                    <div class="auth-option-text">
+                        <strong>Sin contraseña</strong>
+                        <span>Acceso directo, sin cifrado. Más rápido, pero cualquiera con tu dispositivo podrá ver los archivos.</span>
+                    </div>
+                </button>
             </div>
-            <div id="uploadProgress" class="upload-progress hidden">
-                <div class="progress-track">
-                    <div id="progressBar" class="progress-bar"></div>
+
+            <form id="setupPasswordForm" class="auth-form hidden" autocomplete="off">
+                <label for="setupPassword">Crea una contraseña</label>
+                <input id="setupPassword" type="password" required minlength="4" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+                <label for="setupPassword2">Repite la contraseña</label>
+                <input id="setupPassword2" type="password" required minlength="4" placeholder="Confirma" autocomplete="new-password">
+                <p class="auth-warning">
+                    ⚠️ <strong>Importante:</strong> si olvidas esta contraseña no hay forma de recuperar tus archivos.
+                    No se envía a ningún servidor: solo existe en tu cabeza.
+                </p>
+                <div class="auth-actions">
+                    <button type="button" class="btn btn-secondary" data-back>Volver</button>
+                    <button type="submit" class="btn btn-primary">Crear nube</button>
                 </div>
-                <span id="progressText">0%</span>
-            </div>
-        </section>
-
-        <!-- Toolbar -->
-        <section class="toolbar">
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input id="searchInput" type="search" placeholder="Buscar archivo por nombre…">
-            </div>
-            <div class="toolbar-actions">
-                <select id="sortSelect" class="select">
-                    <option value="date-desc">Más recientes</option>
-                    <option value="date-asc">Más antiguos</option>
-                    <option value="name-asc">Nombre A-Z</option>
-                    <option value="name-desc">Nombre Z-A</option>
-                    <option value="size-desc">Tamaño (mayor)</option>
-                    <option value="size-asc">Tamaño (menor)</option>
-                </select>
-                <div class="view-toggle">
-                    <button id="gridViewBtn" class="view-btn active" title="Vista cuadrícula">▦</button>
-                    <button id="listViewBtn" class="view-btn" title="Vista lista">☰</button>
-                </div>
-                <button id="exportAllBtn" class="btn btn-secondary" title="Descargar todos los archivos">⬇ Exportar todo</button>
-                <button id="clearAllBtn" class="btn btn-danger" title="Borrar todos los archivos">🗑 Borrar todo</button>
-            </div>
-        </section>
-
-        <!-- Lista de archivos -->
-        <section id="filesContainer" class="files-container grid-view">
-            <div id="emptyState" class="empty-state">
-                <div class="empty-icon">📂</div>
-                <h3>Tu nube está vacía</h3>
-                <p>Sube archivos para comenzar. Se guardarán en tu navegador y estarán disponibles incluso sin internet.</p>
-            </div>
-            <div id="filesList" class="files-list"></div>
-        </section>
-    </main>
-
-    <!-- Modal de previsualización -->
-    <div id="previewModal" class="modal hidden" role="dialog" aria-modal="true">
-        <div class="modal-overlay" data-close-modal></div>
-        <div class="modal-content">
-            <header class="modal-header">
-                <h3 id="previewTitle">Previsualización</h3>
-                <div class="modal-actions">
-                    <button id="previewDownloadBtn" class="btn btn-primary btn-sm">⬇ Descargar</button>
-                    <button class="btn-icon" data-close-modal title="Cerrar">✕</button>
-                </div>
-            </header>
-            <div id="previewBody" class="modal-body"></div>
+            </form>
         </div>
+    </section>
+
+    <!-- ============ PANTALLA DE BLOQUEO ============ -->
+    <section id="lockScreen" class="auth-screen hidden" role="dialog" aria-labelledby="lockTitle">
+        <div class="auth-card">
+            <div class="auth-logo">🔒</div>
+            <h1 id="lockTitle">NUBE bloqueada</h1>
+            <p class="auth-subtitle">Introduce tu contraseña para descifrar tus archivos.</p>
+            <form id="unlockForm" class="auth-form" autocomplete="off">
+                <label for="unlockPassword">Contraseña</label>
+                <input id="unlockPassword" type="password" required placeholder="Tu contraseña" autocomplete="current-password" autofocus>
+                <p id="unlockError" class="auth-error hidden">Contraseña incorrecta.</p>
+                <div class="auth-actions">
+                    <button type="button" id="resetVaultBtn" class="btn btn-danger btn-sm">Olvidé mi contraseña</button>
+                    <button type="submit" class="btn btn-primary">Desbloquear</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- ============ APP PRINCIPAL ============ -->
+    <div id="mainApp" class="hidden">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-brand">
+                    <h1 class="logo">☁️ NUBE</h1>
+                    <p class="tagline">Sin servidores · Sin pérdida · <span id="encryptionBadge" class="badge">Cifrado</span></p>
+                </div>
+                <div class="header-actions">
+                    <button id="installBtn" class="btn btn-secondary hidden">📲 Instalar app</button>
+                    <button id="lockBtn" class="btn btn-secondary hidden" title="Bloquear nube">🔒 Bloquear</button>
+                </div>
+            </div>
+            <div class="storage-info">
+                <div class="storage-bar">
+                    <div id="storageFill" class="storage-fill"></div>
+                </div>
+                <span id="storageText" class="storage-text">Calculando espacio…</span>
+            </div>
+        </header>
+
+        <main class="container">
+            <section id="dropZone" class="drop-zone" aria-label="Zona para soltar archivos">
+                <div class="drop-zone-content">
+                    <div class="drop-icon">📤</div>
+                    <h2>Arrastra archivos aquí</h2>
+                    <p>o</p>
+                    <label for="fileInput" class="btn btn-primary">Seleccionar archivos</label>
+                    <input id="fileInput" type="file" multiple hidden>
+                    <p class="hint">Cualquier tipo: imágenes, videos, PDF, ZIP, código, etc.</p>
+                </div>
+                <div id="uploadProgress" class="upload-progress hidden">
+                    <div class="progress-track">
+                        <div id="progressBar" class="progress-bar"></div>
+                    </div>
+                    <span id="progressText">0%</span>
+                </div>
+            </section>
+
+            <section class="toolbar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input id="searchInput" type="search" placeholder="Buscar archivo…">
+                </div>
+                <div class="toolbar-actions">
+                    <select id="sortSelect" class="select">
+                        <option value="date-desc">Más recientes</option>
+                        <option value="date-asc">Más antiguos</option>
+                        <option value="name-asc">Nombre A-Z</option>
+                        <option value="name-desc">Nombre Z-A</option>
+                        <option value="size-desc">Tamaño (mayor)</option>
+                        <option value="size-asc">Tamaño (menor)</option>
+                    </select>
+                    <div class="view-toggle">
+                        <button id="gridViewBtn" class="view-btn active" title="Vista cuadrícula">▦</button>
+                        <button id="listViewBtn" class="view-btn" title="Vista lista">☰</button>
+                    </div>
+                    <button id="exportAllBtn" class="btn btn-secondary" title="Descargar todos">⬇ Exportar</button>
+                    <button id="clearAllBtn" class="btn btn-danger" title="Borrar todos">🗑 Borrar todo</button>
+                </div>
+            </section>
+
+            <section id="filesContainer" class="files-container grid-view">
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">📂</div>
+                    <h3>Tu nube está vacía</h3>
+                    <p>Sube archivos para comenzar. Se guardarán en tu dispositivo y estarán disponibles incluso sin internet.</p>
+                </div>
+                <div id="filesList" class="files-list"></div>
+            </section>
+        </main>
+
+        <!-- Modal de previsualización -->
+        <div id="previewModal" class="modal hidden" role="dialog" aria-modal="true">
+            <div class="modal-overlay" data-close-modal></div>
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h3 id="previewTitle">Previsualización</h3>
+                    <div class="modal-actions">
+                        <button id="previewDownloadBtn" class="btn btn-primary btn-sm">⬇ Descargar</button>
+                        <button class="btn-icon" data-close-modal title="Cerrar">✕</button>
+                    </div>
+                </header>
+                <div id="previewBody" class="modal-body"></div>
+            </div>
+        </div>
+
+        <footer class="app-footer">
+            <p id="footerText">100% offline · IndexedDB + AES-256-GCM</p>
+        </footer>
     </div>
 
-    <!-- Toast notifications -->
+    <!-- Toasts -->
     <div id="toastContainer" class="toast-container" aria-live="polite"></div>
-
-    <footer class="app-footer">
-        <p>
-            100% offline · Tus archivos nunca salen de este dispositivo · Almacenado con IndexedDB
-        </p>
-    </footer>
 
     <script src="app.js"></script>
 </body>
